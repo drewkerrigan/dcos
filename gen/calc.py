@@ -339,6 +339,33 @@ def validate_bootstrap_tmp_dir(bootstrap_tmp_dir):
         "Must be an absolute path to a directory, although leave off the `/` at the beginning and end."
 
 
+def calculate_minuteman_min_named_ip_str(minuteman_min_named_ip):
+    return calculate_ip_erlstr(minuteman_min_named_ip)
+
+
+def calculate_minuteman_max_named_ip_str(minuteman_max_named_ip):
+    return calculate_ip_erlstr(minuteman_max_named_ip)
+
+
+def calculate_ip_erlstr(ip):
+    return '{' + ip.replace('.', ',') + '}'
+
+
+def validate_minuteman_min_named_ip(minuteman_min_named_ip):
+    validate_ipv4_address_format(minuteman_min_named_ip)
+
+
+def validate_minuteman_max_named_ip(minuteman_max_named_ip):
+    validate_ipv4_address_format(minuteman_max_named_ip)
+
+
+def validate_ipv4_address_format(ip):
+    try:
+        socket.inet_pton(socket.AF_INET, ip)
+    except OSError:
+        raise AssertionError("Invalid IPv4 address: .".format(ip))
+
+
 __logrotate_slave_module_name = 'org_apache_mesos_LogrotateContainerLogger'
 
 
@@ -364,7 +391,9 @@ entry = {
         lambda dcos_overlay_config_attempts: validate_int_in_range(dcos_overlay_config_attempts, 0, 10),
         lambda dcos_remove_dockercfg_enable: validate_true_false(dcos_remove_dockercfg_enable),
         validate_rexray_config,
-        lambda check_time: validate_true_false(check_time)],
+        lambda check_time: validate_true_false(check_time),
+        validate_minuteman_min_named_ip,
+        validate_minuteman_max_named_ip],
     'default': {
         'bootstrap_tmp_dir': 'tmp',
         'bootstrap_variant': lambda: calculate_environment_variable('BOOTSTRAP_VARIANT'),
@@ -446,6 +475,8 @@ entry = {
         'ui_networking': 'false',
         'ui_organization': 'false',
         'minuteman_forward_metrics': 'false',
+        'minuteman_min_named_ip_str': calculate_minuteman_min_named_ip_str,
+        'minuteman_max_named_ip_str': calculate_minuteman_max_named_ip_str,
         'mesos_isolation': 'cgroups/cpu,cgroups/mem,disk/du,network/cni,filesystem/linux,docker/runtime,docker/volume',
         'config_yaml': calculate_config_yaml,
         'mesos_hooks': calculate_mesos_hooks,
@@ -465,7 +496,9 @@ entry = {
                 'default': {
                     'resolvers': '["8.8.8.8", "8.8.4.4"]',
                     'ip_detect_filename': 'genconf/ip-detect',
-                    'bootstrap_id': lambda: calculate_environment_variable('BOOTSTRAP_ID')
+                    'bootstrap_id': lambda: calculate_environment_variable('BOOTSTRAP_ID'),
+                    'minuteman_min_named_ip': '11.0.0.0',
+                    'minuteman_max_named_ip': '11.0.0.254',
                 },
             },
             'azure': gen.azure.calc.entry,

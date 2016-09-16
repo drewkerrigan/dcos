@@ -87,7 +87,9 @@ package:
       [
         {minuteman,
           [
-            {agent_polling_enabled, false}
+            {agent_polling_enabled, false},
+            {min_named_ip, {{ minuteman_min_named_ip_str }}},
+            {max_named_ip, {{ minuteman_max_named_ip_str }}}
           ]
         }
       ].
